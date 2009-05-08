@@ -20,7 +20,7 @@ import java.net.URL;
  * 
  */
 public class FDM_Remote {
-
+	private static String _protocol;
 	private static int _port;
 	private static String _host;
 	private static String _username;
@@ -41,7 +41,21 @@ public class FDM_Remote {
 	 * 
 	 * 
 	 */
-	public FDM_Remote(String host, int port, String username, String password) {
+	public FDM_Remote(HTTPProtocol protocol, String host, int port,
+			String username, String password) {
+
+		switch (protocol) {
+		case HTTP:
+			FDM_Remote._protocol = "http://";
+			break;
+		case HTTPS:
+			FDM_Remote._protocol = "https://";
+			break;
+		default:
+			FDM_Remote._protocol = "http://";
+			break;
+
+		}
 		FDM_Remote._host = host;
 		FDM_Remote._port = port;
 		FDM_Remote._username = username;
@@ -58,7 +72,19 @@ public class FDM_Remote {
 	 *            - The port configured in FDM Remote Server.
 	 * 
 	 */
-	public FDM_Remote(String host, int port) {
+	public FDM_Remote(HTTPProtocol protocol, String host, int port) {
+		switch (protocol) {
+		case HTTP:
+			FDM_Remote._protocol = "http://";
+			break;
+		case HTTPS:
+			FDM_Remote._protocol = "https://";
+			break;
+		default:
+			FDM_Remote._protocol = "http://";
+			break;
+
+		}
 		FDM_Remote._host = host;
 		FDM_Remote._port = port;
 
@@ -71,7 +97,7 @@ public class FDM_Remote {
 	 */
 	public String getActiveDownloads() {
 
-		return makeRequest("");
+		return makeRequest("/");
 	}
 
 	/**
@@ -84,7 +110,6 @@ public class FDM_Remote {
 	public String getCompletedDownloads() {
 
 		String tableString = makeRequest("compdlds.req");
-
 		return tableString;
 	}
 
@@ -99,7 +124,12 @@ public class FDM_Remote {
 	 */
 	public boolean addDownload(String url) {
 
-		return Boolean.getBoolean(makeRequest("/adddownload.req?URL=" + url));
+		if ( url.startsWith("http://") ||  url.startsWith("https://")){
+		return Boolean.getBoolean(makeRequest("adddownload.req?URL=" + url));
+		}
+		else {
+			return false;
+		}
 	}
 
 	/**
@@ -115,6 +145,7 @@ public class FDM_Remote {
 	 */
 	public boolean addMultipleDownloads(String[] urls) {
 
+		
 		for (int i = 0; i < urls.length; i++) {
 			if (!Boolean.getBoolean(makeRequest("/adddownload.req?URL="
 					+ urls[i]))) {
@@ -132,11 +163,15 @@ public class FDM_Remote {
 	 */
 	private String makeRequest(String req) {
 		String requestUrl;
+		
+		if (! req.startsWith("/")){
+			req = "/" + req;
+		}
 		if (_username == null) {
-			requestUrl = "http://" + _host + ":" + _port + "/" + req;
+			requestUrl = _protocol + _host + ":" + _port  + req;
 		} else {
-			requestUrl = "http://" + _username + ":" + _password + "@" + _host
-					+ ":" + _port + "/";
+			requestUrl = _protocol + _username + ":" + _password + "@" + _host
+					+ ":" + _port + req;
 		}
 
 		String result = "";
