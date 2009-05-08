@@ -25,11 +25,15 @@ public class FDM_Remote {
 	private static String _host;
 	private static String _username;
 	private static String _password;
+	private boolean _auth;
 
 	/**
+	 * 
 	 * Constructor for FDM connection. Use this constructor if you have setup
 	 * authentication on your FDM Server.
 	 * 
+	 * @param protocol
+	 *            - The protocol in which you are using
 	 * @param host
 	 *            - The host machine or domain name. (Do not add "http://".
 	 * @param port
@@ -60,9 +64,11 @@ public class FDM_Remote {
 		FDM_Remote._port = port;
 		FDM_Remote._username = username;
 		FDM_Remote._password = password;
+		_auth = true;
 	}
 
 	/**
+	 * 
 	 * Constructor for FDM connection. Use this constructor if you have not
 	 * setup authentication on your FDM Server.
 	 * 
@@ -70,6 +76,8 @@ public class FDM_Remote {
 	 *            - The host machine or domain name. (Do not add "http://".
 	 * @param port
 	 *            - The port configured in FDM Remote Server.
+	 * 
+	 * 
 	 * 
 	 */
 	public FDM_Remote(HTTPProtocol protocol, String host, int port) {
@@ -87,6 +95,7 @@ public class FDM_Remote {
 		}
 		FDM_Remote._host = host;
 		FDM_Remote._port = port;
+		_auth = false;
 
 	}
 
@@ -124,10 +133,10 @@ public class FDM_Remote {
 	 */
 	public boolean addDownload(String url) {
 
-		if ( url.startsWith("http://") ||  url.startsWith("https://")){
-		return Boolean.getBoolean(makeRequest("adddownload.req?URL=" + url));
-		}
-		else {
+		if (url.startsWith("http://") || url.startsWith("https://")) {
+			return Boolean
+					.getBoolean(makeRequest("adddownload.req?URL=" + url));
+		} else {
 			return false;
 		}
 	}
@@ -145,7 +154,6 @@ public class FDM_Remote {
 	 */
 	public boolean addMultipleDownloads(String[] urls) {
 
-		
 		for (int i = 0; i < urls.length; i++) {
 			if (!Boolean.getBoolean(makeRequest("/adddownload.req?URL="
 					+ urls[i]))) {
@@ -163,12 +171,12 @@ public class FDM_Remote {
 	 */
 	private String makeRequest(String req) {
 		String requestUrl;
-		
-		if (! req.startsWith("/")){
+
+		if (!req.startsWith("/")) {
 			req = "/" + req;
 		}
-		if (_username == null) {
-			requestUrl = _protocol + _host + ":" + _port  + req;
+		if (!_auth) {
+			requestUrl = _protocol + _host + ":" + _port + req;
 		} else {
 			requestUrl = _protocol + _username + ":" + _password + "@" + _host
 					+ ":" + _port + req;
